@@ -11,7 +11,10 @@
 	import { FitAddon } from '@xterm/addon-fit';
 	const fitAddon = new FitAddon();
 
-	export const term = new Terminal();
+	export const term = new Terminal({
+		disableStdin: true,
+		fontFamily: `ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace`
+	});
 	term.loadAddon(new WebLinksAddon());
 	term.loadAddon(fitAddon);
 

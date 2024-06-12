@@ -1,7 +1,7 @@
 <script lang="ts" context="module">
 	export type Events = {
-		stdout: string;
-		stderr: string;
+		stdout: string | Uint8Array;
+		stderr: string | Uint8Array;
 	};
 </script>
 
@@ -49,14 +49,26 @@
 	let lastEmitter: Emitter<Events> | undefined = undefined;
 
 	let triggerRun = async () => {
-		xterm.write('\x1b[2J\x1b[H');
 		xterm.clear();
+		xterm.write('\x1b[2J\x1b[H');
 		if (lastEmitter) {
 			(lastEmitter as Emitter<any>).off('*');
 		}
+
+		const spinner = ['|', '/', '-', '\\'];
+		let i = 0;
+		const timeout = setInterval(() => {
+			xterm.write('\r' + spinner[i]);
+			i = (i + 1) % spinner.length;
+		}, 100);
+
 		const emitter = await run(me.getValue());
+		clearTimeout(timeout);
+		xterm.write('\x1b[2J\x1b[H');
 		emitter.on('*', (type, s) => {
 			xterm.write(s);
+			//TODO: bug? unwanted space are added, this should be fixed!!!
+			// console.log(new TextDecoder().decode(s))
 		});
 		lastEmitter = emitter;
 	};
@@ -75,10 +87,20 @@
 </script>
 
 <div class="h-[100vh] flex flex-col">
-	<header class="h-[3rem] p-2 flex justify-between items-center">
+	<header class="h-[3rem] p-2 flex gap-4 justify-between items-center">
 		<h1>{title}</h1>
 
-		<div class="btn-group variant-filled h-8">
+		<div class="btn-group h-8 flex-shrink overflow-x-auto" style="scrollbar-width: thin;">
+			<button on:click={triggerRun}
+				><svg
+					width="15"
+					height="15"
+					viewBox="0 0 15 15"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					><path d="M6 11L6 4L10.5 7.5L6 11Z" fill="currentColor"></path></svg
+				>&nbsp;&nbsp;Run</button
+			>
 			<button on:click={clear}
 				><svg
 					width="15"
@@ -93,16 +115,6 @@
 						clip-rule="evenodd"
 					></path></svg
 				>&nbsp;&nbsp;Clear</button
-			>
-			<button on:click={triggerRun}
-				><svg
-					width="15"
-					height="15"
-					viewBox="0 0 15 15"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-					><path d="M6 11L6 4L10.5 7.5L6 11Z" fill="currentColor"></path></svg
-				>&nbsp;&nbsp;Run</button
 			>
 			<button on:click={fmt}
 				><svg
@@ -121,7 +133,7 @@
 			>
 		</div>
 
-		<LightSwitch />
+		<LightSwitch class="flex-shrink-0" />
 	</header>
 
 	<div class={`h-[calc(100vh-3rem)] flex ${topBottom ? 'flex-col' : 'flex-row'}`}>
@@ -130,14 +142,14 @@
 				? showTerm
 					? 'h-[calc(100vh-3rem-19.5rem)]'
 					: 'h-[calc(100vh-3rem-1.5rem)]'
-				: 'h-[calc(100vh-3rem)] w-[80vw]'}
+				: 'h-[calc(100vh-3rem)] w-[calc(100vw-max(25vw,16rem))]'}
 			value={initCode}
 			bind:this={me}
 		/>
 
 		<div
 			style:height={topBottom ? (showTerm ? '19.5rem' : '1.5rem') : ''}
-			style:width={topBottom ? '100%' : '20vw'}
+			style:width={topBottom ? '100%' : 'max(25vw,16rem)'}
 			class="overflow-hidden"
 		>
 			<header class="h-[1.5rem] flex justify-between p-1">

@@ -1,0 +1,61 @@
+{
+  "version": "3",
+  "packages": {
+    "specifiers": {
+      "jsr:@std/encoding": "jsr:@std/encoding@0.224.3"
+    },
+    "jsr": {
+      "@std/encoding@0.224.3": {
+        "integrity": "5e861b6d81be5359fad4155e591acf17c0207b595112d1840998bb9f476dbdaf"
+      }
+    }
+  },
+  "redirects": {
+    "https://esm.sh/serve-router@1": "https://esm.sh/serve-router@1.1.0"
+  },
+  "remote": {
+    "https://esm.sh/serve-router@1.1.0": "eca0c323b16b6696bfefce5b140c610c8ec89bcfad858fb1a0f185add8eac033",
+    "https://esm.sh/v135/serve-router@1.1.0/denonext/serve-router.mjs": "a7b607ebba1e2ab66a926d86d6afadbb36c8dc08457e3fea27a3ac91e0102cb3"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@microsoft/fetch-event-source@^2.0.1",
+        "npm:@skeletonlabs/skeleton@2.10.0",
+        "npm:@skeletonlabs/tw-plugin@0.4.0",
+        "npm:@sveltejs/adapter-auto@^3.2.1",
+        "npm:@sveltejs/adapter-static@^3.0.1",
+        "npm:@sveltejs/kit@^2.5.10",
+        "npm:@sveltejs/vite-plugin-svelte@^3.1.1",
+        "npm:@tailwindcss/forms@0.5.7",
+        "npm:@tailwindcss/typography@0.5.13",
+        "npm:@types/eslint@^8.56.10",
+        "npm:@types/node@20.14.2",
+        "npm:@wasm-fmt/web_fmt@^0.1.10",
+        "npm:@xterm/addon-fit@^0.10.0",
+        "npm:@xterm/addon-web-links@^0.11.0",
+        "npm:@xterm/xterm@^5.5.0",
+        "npm:autoprefixer@10.4.19",
+        "npm:eslint-config-prettier@^9.1.0",
+        "npm:eslint-plugin-svelte@^2.39.3",
+        "npm:eslint@^9.4.0",
+        "npm:globals@^15.4.0",
+        "npm:install@^0.13.0",
+        "npm:mitt@^3.0.1",
+        "npm:monaco-editor@^0.49.0",
+        "npm:npm@^10.8.1",
+        "npm:postcss@8.4.38",
+        "npm:prettier-plugin-svelte@^3.2.4",
+        "npm:prettier@^3.3.2",
+        "npm:svelte-check@^3.8.0",
+        "npm:svelte@^4.2.18",
+        "npm:tailwindcss@3.4.4",
+        "npm:tslib@^2.6.3",
+        "npm:typescript-eslint@^8.0.0-alpha.30",
+        "npm:typescript@^5.4.5",
+        "npm:vite-plugin-tailwind-purgecss@0.3.3",
+        "npm:vite@^5.2.13"
+      ]
+    }
+  }
+}

@@ -1,34 +1,12 @@
 <script lang="ts">
-	import Playground, { type Events } from '$lib/Playground.svelte';
-	import mitt from 'mitt';
-
+	import Playground from '$lib/Playground.svelte';
+	import { runEval, createRunEventStream } from '$lib/runner';
+	//TODO: WIP, should use a real server
 	const initCode = `console.log('Deno.version')`;
-
-	const run = async (code: string) => {
-		const emitter = mitt<Events>();
-
-		requestAnimationFrame(() => {
-			try {
-				new Function('console', code)({
-					...console,
-					log: (...args: any[]) => {
-						emitter.emit('stdout', String(args));
-					},
-					error: (...args: any[]) => {
-						emitter.emit('stderr', String(args));
-					},
-					clear: () => {
-						emitter.emit('stdout', '\x1b[2J\x1b[H');
-						emitter.emit('stderr', '\x1b[2J\x1b[H');
-					}
-				});
-			} catch (e) {
-				emitter.emit('stderr', String(e));
-			}
-		});
-
-		return emitter;
-	};
 </script>
 
-<Playground title="Deno Playground" {initCode} {run} />
+<Playground
+	title="Deno Playground"
+	{initCode}
+	run={createRunEventStream('http://localhost:8000/event-stream')}
+/>
