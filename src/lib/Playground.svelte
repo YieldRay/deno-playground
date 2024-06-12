@@ -1,0 +1,157 @@
+<script lang="ts" context="module">
+	export type Events = {
+		stdout: string;
+		stderr: string;
+	};
+</script>
+
+<script lang="ts">
+	import { LightSwitch } from '@skeletonlabs/skeleton';
+	import MonacoEditor from '$lib/MonacoEditor.svelte';
+	let me: { getValue: () => string; setValue: (v: string) => void; trigger: Function };
+	import XTerm, { type Terminal } from '$lib/XTerm.svelte';
+	import ArrowButton from '$lib/ArrowButton.svelte';
+	import PanelButton from '$lib/PanelButton.svelte';
+	let xterm: Terminal;
+
+	export let title: string;
+	export let initCode: string = '';
+
+	let showTerm = true;
+	let topBottom = true;
+
+	import { getModalStore } from '@skeletonlabs/skeleton';
+	const modalStore = getModalStore();
+
+	const clear = () => {
+		modalStore.trigger({
+			type: 'confirm',
+			title: 'Please Confirm',
+			body: 'Are you sure you wish to clear?',
+			response: (yes) => {
+				if (yes) {
+					me.setValue('');
+					xterm.write('\x1b[2J\x1b[H');
+				}
+			}
+		});
+	};
+
+	const fmt = () => {
+		me.trigger('editor', 'editor.action.formatDocument');
+	};
+
+	import { type Emitter } from 'mitt';
+	import { onDestroy, onMount } from 'svelte';
+
+	export let run: (code: string) => Promise<Emitter<Events>>;
+
+	let lastEmitter: Emitter<Events> | undefined = undefined;
+
+	let triggerRun = async () => {
+		xterm.write('\x1b[2J\x1b[H');
+		xterm.clear();
+		if (lastEmitter) {
+			(lastEmitter as Emitter<any>).off('*');
+		}
+		const emitter = await run(me.getValue());
+		emitter.on('*', (type, s) => {
+			xterm.write(s);
+		});
+		lastEmitter = emitter;
+	};
+
+	const keydown = (event: KeyboardEvent) => {
+		if (event.ctrlKey && event.altKey && event.key === 'n') {
+			triggerRun();
+		}
+		if (event.ctrlKey && event.key === '\\') {
+			topBottom = !topBottom;
+		}
+	};
+
+	onMount(() => document.addEventListener('keydown', keydown));
+	onDestroy(() => document.removeEventListener('keydown', keydown));
+</script>
+
+<div class="h-[100vh] flex flex-col">
+	<header class="h-[3rem] p-2 flex justify-between items-center">
+		<h1>{title}</h1>
+
+		<div class="btn-group variant-filled h-8">
+			<button on:click={clear}
+				><svg
+					width="15"
+					height="15"
+					viewBox="0 0 15 15"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					><path
+						d="M8.36052 0.72921C8.55578 0.533948 8.87236 0.533948 9.06763 0.72921L14.2708 5.93235C14.466 6.12761 14.466 6.4442 14.2708 6.63946L8.95513 11.9551L7.3466 13.5636C6.76081 14.1494 5.81106 14.1494 5.22528 13.5636L1.43635 9.7747C0.850563 9.18891 0.850563 8.23917 1.43635 7.65338L3.04488 6.04485L8.36052 0.72921ZM8.71407 1.78987L4.10554 6.3984L8.60157 10.8944L13.2101 6.28591L8.71407 1.78987ZM7.89447 11.6015L3.39843 7.10551L2.14346 8.36049C1.94819 8.55575 1.94819 8.87233 2.14346 9.06759L5.93238 12.8565C6.12765 13.0518 6.44423 13.0518 6.63949 12.8565L7.89447 11.6015Z"
+						fill="currentColor"
+						fill-rule="evenodd"
+						clip-rule="evenodd"
+					></path></svg
+				>&nbsp;&nbsp;Clear</button
+			>
+			<button on:click={triggerRun}
+				><svg
+					width="15"
+					height="15"
+					viewBox="0 0 15 15"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					><path d="M6 11L6 4L10.5 7.5L6 11Z" fill="currentColor"></path></svg
+				>&nbsp;&nbsp;Run</button
+			>
+			<button on:click={fmt}
+				><svg
+					width="15"
+					height="15"
+					viewBox="0 0 15 15"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					><path
+						d="M13.9 0.499976C13.9 0.279062 13.7209 0.0999756 13.5 0.0999756C13.2791 0.0999756 13.1 0.279062 13.1 0.499976V1.09998H12.5C12.2791 1.09998 12.1 1.27906 12.1 1.49998C12.1 1.72089 12.2791 1.89998 12.5 1.89998H13.1V2.49998C13.1 2.72089 13.2791 2.89998 13.5 2.89998C13.7209 2.89998 13.9 2.72089 13.9 2.49998V1.89998H14.5C14.7209 1.89998 14.9 1.72089 14.9 1.49998C14.9 1.27906 14.7209 1.09998 14.5 1.09998H13.9V0.499976ZM11.8536 3.14642C12.0488 3.34168 12.0488 3.65826 11.8536 3.85353L10.8536 4.85353C10.6583 5.04879 10.3417 5.04879 10.1465 4.85353C9.9512 4.65827 9.9512 4.34169 10.1465 4.14642L11.1464 3.14643C11.3417 2.95116 11.6583 2.95116 11.8536 3.14642ZM9.85357 5.14642C10.0488 5.34168 10.0488 5.65827 9.85357 5.85353L2.85355 12.8535C2.65829 13.0488 2.34171 13.0488 2.14645 12.8535C1.95118 12.6583 1.95118 12.3417 2.14645 12.1464L9.14646 5.14642C9.34172 4.95116 9.65831 4.95116 9.85357 5.14642ZM13.5 5.09998C13.7209 5.09998 13.9 5.27906 13.9 5.49998V6.09998H14.5C14.7209 6.09998 14.9 6.27906 14.9 6.49998C14.9 6.72089 14.7209 6.89998 14.5 6.89998H13.9V7.49998C13.9 7.72089 13.7209 7.89998 13.5 7.89998C13.2791 7.89998 13.1 7.72089 13.1 7.49998V6.89998H12.5C12.2791 6.89998 12.1 6.72089 12.1 6.49998C12.1 6.27906 12.2791 6.09998 12.5 6.09998H13.1V5.49998C13.1 5.27906 13.2791 5.09998 13.5 5.09998ZM8.90002 0.499976C8.90002 0.279062 8.72093 0.0999756 8.50002 0.0999756C8.2791 0.0999756 8.10002 0.279062 8.10002 0.499976V1.09998H7.50002C7.2791 1.09998 7.10002 1.27906 7.10002 1.49998C7.10002 1.72089 7.2791 1.89998 7.50002 1.89998H8.10002V2.49998C8.10002 2.72089 8.2791 2.89998 8.50002 2.89998C8.72093 2.89998 8.90002 2.72089 8.90002 2.49998V1.89998H9.50002C9.72093 1.89998 9.90002 1.72089 9.90002 1.49998C9.90002 1.27906 9.72093 1.09998 9.50002 1.09998H8.90002V0.499976Z"
+						fill="currentColor"
+						fill-rule="evenodd"
+						clip-rule="evenodd"
+					></path></svg
+				>&nbsp;&nbsp;Format</button
+			>
+		</div>
+
+		<LightSwitch />
+	</header>
+
+	<div class={`h-[calc(100vh-3rem)] flex ${topBottom ? 'flex-col' : 'flex-row'}`}>
+		<MonacoEditor
+			class={topBottom
+				? showTerm
+					? 'h-[calc(100vh-3rem-19.5rem)]'
+					: 'h-[calc(100vh-3rem-1.5rem)]'
+				: 'h-[calc(100vh-3rem)] w-[80vw]'}
+			value={initCode}
+			bind:this={me}
+		/>
+
+		<div
+			style:height={topBottom ? (showTerm ? '19.5rem' : '1.5rem') : ''}
+			style:width={topBottom ? '100%' : '20vw'}
+			class="overflow-hidden"
+		>
+			<header class="h-[1.5rem] flex justify-between p-1">
+				<span class="text-xs">OUTPUT</span>
+
+				<aside class="flex gap-2 items-center">
+					<PanelButton bind:active={topBottom} />
+					{#if topBottom}
+						<ArrowButton bind:active={showTerm} />
+					{/if}
+				</aside>
+			</header>
+
+			<XTerm class="h-full bg-black" bind:term={xterm} />
+		</div>
+	</div>
+</div>
