@@ -25,11 +25,30 @@ app.all('/event-stream', async (req) => {
 				console.log({ date: new Date(), filepath, content: code });
 
 				const cmd = new Deno.Command(Deno.execPath(), {
-					args: ['run', '-Ar', filepath],
+					args: [
+						'run',
+						'-A',
+						'-r',
+						'--no-prompt',
+						'--lock-write',
+						'--unstable-bare-node-builtins',
+						'--unstable-byonm',
+						// '--unstable-sloppy-imports',
+						'--unstable-unsafe-proto',
+						'--unstable-webgpu',
+						'--unstable-broadcast-channel',
+						'--unstable-worker-options',
+						'--unstable-cron',
+						'--unstable-kv',
+						'--unstable-ffi',
+						'--unstable-fs',
+						'--unstable-net',
+						filepath
+					],
 					stdin: 'null',
 					stdout: 'piped',
 					stderr: 'piped',
-					clearEnv: true,
+					// clearEnv: true,
 					cwd: await Deno.makeTempDir(),
 					signal: AbortSignal.timeout(TIMEOUT)
 				});
@@ -53,12 +72,24 @@ app.all('/event-stream', async (req) => {
 					})()
 				]);
 
+				/**
+				 * note that the `exit` event does NOT encode base64, just normal string
+				 */
+				const status = await child.status;
+				controller.enqueue(
+					new TextEncoder().encode(
+						`event: exit\ndata: ${status.success ? `Normal program termination. Exit status: ${status.code}` : `Exit status: ${status.code}`}\n\n`
+					)
+				);
 				console.log({
 					date: new Date(),
 					filepath,
 					pid: child.pid,
-					code: (await child.status).code
+					code: status.code
 				});
+			} catch (e) {
+				console.error(e);
+				controller.enqueue(new TextEncoder().encode(`event: exit\ndata: Interrupted\n\n`));
 			} finally {
 				controller.close();
 			}

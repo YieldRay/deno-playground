@@ -13,10 +13,10 @@ export async function runEval(code: string) {
 			new Function('console', code)({
 				...console,
 				log: (...args: any[]) => {
-					emitter.emit('stdout', String(args));
+					emitter.emit('stdout', String(args) + '\r\n');
 				},
 				error: (...args: any[]) => {
-					emitter.emit('stderr', String(args));
+					emitter.emit('stderr', String(args) + '\r\n');
 				},
 				clear: () => {
 					emitter.emit('stdout', '\x1b[2J\x1b[H');
@@ -25,6 +25,8 @@ export async function runEval(code: string) {
 			});
 		} catch (e) {
 			emitter.emit('stderr', String(e));
+		} finally {
+			emitter.emit('exit', 'end');
 		}
 	});
 
@@ -39,11 +41,17 @@ export function createRunEventStream(url: string) {
 			method: 'POST',
 			body: code,
 			onmessage({ event, data }) {
-				const buf = decodeBase64(data);
-				console.log({ event, buf, text: new TextDecoder().decode(buf) });
-				emitter.emit(event as 'stdout' | 'stderr', buf);
+				if (event === 'stdout' || event === 'stderr') {
+					const buf = decodeBase64(data);
+					console.log({ event, buf, text: new TextDecoder().decode(buf) });
+					emitter.emit(event, buf);
+				} else {
+					console.log({ event, text: data });
+					emitter.emit(event as any, data);
+				}
 			},
 			onerror(e) {
+				emitter.emit('exit', 'Network Error');
 				emitter.emit('stderr', String(e));
 				throw e;
 			}
