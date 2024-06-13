@@ -1,12 +1,13 @@
-import { type Events } from '$lib/Playground.svelte';
+import { type Events } from '$lib/components/Playground.svelte';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import mitt from 'mitt';
 
 /**
  * for debug
  */
-export async function runEval(code: string) {
+export function runEval(code: string) {
 	const emitter = mitt<Events>();
+	emitter.emit('ready');
 
 	setTimeout(() => {
 		try {
@@ -34,7 +35,7 @@ export async function runEval(code: string) {
 }
 
 export function createRunEventStream(url: string) {
-	return async (code: string) => {
+	return (code: string) => {
 		const emitter = mitt<Events>();
 
 		fetchEventSource(url, {

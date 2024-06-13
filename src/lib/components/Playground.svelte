@@ -2,17 +2,20 @@
 	export type Events = {
 		stdout: string | Uint8Array;
 		stderr: string | Uint8Array;
+		ready: void;
 		exit: string;
 	};
 </script>
 
 <script lang="ts">
+	import { atou, utoa } from '$lib/share';
+	import { copy } from '$lib/copy';
 	import { LightSwitch } from '@skeletonlabs/skeleton';
-	import MonacoEditor from '$lib/MonacoEditor.svelte';
+	import MonacoEditor from '$lib/components/MonacoEditor.svelte';
 	let me: { getValue: () => string; setValue: (v: string) => void; trigger: Function };
-	import XTerm, { type Terminal } from '$lib/XTerm.svelte';
-	import ArrowButton from '$lib/ArrowButton.svelte';
-	import PanelButton from '$lib/PanelButton.svelte';
+	import XTerm, { type Terminal } from '$lib/components/XTerm.svelte';
+	import ArrowButton from '$lib/components/ArrowButton.svelte';
+	import PanelButton from '$lib/components/PanelButton.svelte';
 	let xterm: Terminal;
 
 	export let title: string;
@@ -27,6 +30,9 @@
 	import { Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
 	const drawerStore = getDrawerStore();
 
+	import { getToastStore } from '@skeletonlabs/skeleton';
+	const toastStore = getToastStore();
+
 	const clear = () => {
 		modalStore.trigger({
 			type: 'confirm',
@@ -36,6 +42,10 @@
 				if (yes) {
 					me.setValue('');
 					xterm.write('\x1b[2J\x1b[H');
+					toastStore.trigger({
+						message: 'Cleared!',
+						timeout: 1000
+					});
 				}
 			}
 		});
@@ -43,20 +53,33 @@
 
 	const fmt = () => {
 		me.trigger('editor', 'editor.action.formatDocument');
+		toastStore.trigger({
+			message: 'Formatted!',
+			timeout: 1000
+		});
+	};
+	const share = () => {
+		const encoded = utoa(me.getValue());
+		location.hash = encoded;
+		copy(location.href);
+
+		toastStore.trigger({
+			message: 'Share link copyed!',
+			timeout: 2000
+		});
 	};
 
 	import { type Emitter } from 'mitt';
 	import { onDestroy, onMount } from 'svelte';
 	let statusText = '0 Errors';
 
-	export let run: (code: string) => Promise<Emitter<Events>>;
+	export let run: (code: string) => Emitter<Events>;
 
 	let lastEmitter: Emitter<Events> | undefined = undefined;
 
 	let triggerRun = async () => {
-		statusText = 'Running...';
-		xterm.clear();
-		xterm.write('\x1b[2J\x1b[H');
+		statusText = 'Preparing...';
+
 		if (lastEmitter) {
 			(lastEmitter as Emitter<any>).off('*');
 		}
@@ -68,12 +91,26 @@
 			i = (i + 1) % spinner.length;
 		}, 100);
 
-		const emitter = await run(me.getValue());
-		clearTimeout(timeout);
-		xterm.write('\x1b[2J\x1b[H');
-		emitter.on('stdout', (s) => xterm.write(s));
-		emitter.on('stderr', (s) => xterm.write(s));
-		emitter.on('exit', (s) => (statusText = s));
+		const clear = () => {
+			xterm.clear();
+			xterm.write('\x1b[2J\x1b[H');
+			clearInterval(timeout);
+		};
+		clear();
+
+		const emitter = run(me.getValue());
+
+		emitter.on('exit', (s) => {
+			statusText = s;
+			(emitter as Emitter<any>).off('*');
+		});
+		emitter.on('ready', () => {
+			clear();
+			statusText = 'Running...';
+			emitter.on('stdout', (s) => xterm.write(s));
+			emitter.on('stderr', (s) => xterm.write(s));
+		});
+
 		lastEmitter = emitter;
 	};
 
@@ -86,8 +123,21 @@
 		}
 	};
 
-	onMount(() => document.addEventListener('keydown', keydown));
-	onDestroy(() => document.removeEventListener('keydown', keydown));
+	onMount(() => {
+		document.addEventListener('keydown', keydown);
+		const encoded = location.hash.slice(1);
+		if (encoded) {
+			try {
+				const decoded = atou(encoded);
+				initCode = decoded;
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	});
+	onDestroy(() => {
+		document.removeEventListener('keydown', keydown);
+	});
 </script>
 
 <div class="h-[100vh] flex flex-col">
@@ -160,6 +210,21 @@
 					></path></svg
 				>&nbsp;&nbsp;Format</button
 			>
+			<button on:click={share}>
+				<svg
+					width="15"
+					height="15"
+					viewBox="0 0 15 15"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					><path
+						d="M5 7.50003C5 8.32845 4.32843 9.00003 3.5 9.00003C2.67157 9.00003 2 8.32845 2 7.50003C2 6.6716 2.67157 6.00003 3.5 6.00003C4.32843 6.00003 5 6.6716 5 7.50003ZM5.71313 8.66388C5.29445 9.45838 4.46048 10 3.5 10C2.11929 10 1 8.88074 1 7.50003C1 6.11931 2.11929 5.00003 3.5 5.00003C4.46048 5.00003 5.29445 5.54167 5.71313 6.33616L9.10424 4.21671C9.03643 3.98968 9 3.74911 9 3.50003C9 2.11932 10.1193 1.00003 11.5 1.00003C12.8807 1.00003 14 2.11932 14 3.50003C14 4.88074 12.8807 6.00003 11.5 6.00003C10.6915 6.00003 9.97264 5.61624 9.51566 5.0209L5.9853 7.22738C5.99502 7.31692 6 7.40789 6 7.50003C6 7.59216 5.99502 7.68312 5.9853 7.77267L9.51567 9.97915C9.97265 9.38382 10.6915 9.00003 11.5 9.00003C12.8807 9.00003 14 10.1193 14 11.5C14 12.8807 12.8807 14 11.5 14C10.1193 14 9 12.8807 9 11.5C9 11.2509 9.03643 11.0104 9.10425 10.7833L5.71313 8.66388ZM11.5 5.00003C12.3284 5.00003 13 4.32846 13 3.50003C13 2.6716 12.3284 2.00003 11.5 2.00003C10.6716 2.00003 10 2.6716 10 3.50003C10 4.32846 10.6716 5.00003 11.5 5.00003ZM13 11.5C13 12.3285 12.3284 13 11.5 13C10.6716 13 10 12.3285 10 11.5C10 10.6716 10.6716 10 11.5 10C12.3284 10 13 10.6716 13 11.5Z"
+						fill="currentColor"
+						fill-rule="evenodd"
+						clip-rule="evenodd"
+					></path></svg
+				>&nbsp;&nbsp;Share
+			</button>
 		</div>
 
 		<LightSwitch class="flex-shrink-0" />

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Playground from '$lib/Playground.svelte';
+	import Playground from '$lib/components/Playground.svelte';
 	import { createRunEventStream } from '$lib/runner';
 	const initCode = `console.log(Deno.version)`;
 </script>
