@@ -1,15 +1,10 @@
 <script lang="ts">
 	import Playground from '$lib/Playground.svelte';
-	import { runEval, createRunEventStream } from '$lib/runner';
-	//TODO: WIP, should use a real server
+	import { createRunEventStream } from '$lib/runner';
 	const initCode = `console.log(Deno.version)`;
 </script>
 
-<Playground
-	title="Deno Playground"
-	{initCode}
-	run={createRunEventStream('http://localhost:8000/event-stream')}
->
+<Playground title="Deno Playground" {initCode} run={createRunEventStream('/api/event-stream')}>
 	<aside class="p-4">
 		<h1 class="p-8 text-3xl text-center">Deno Playground</h1>
 
