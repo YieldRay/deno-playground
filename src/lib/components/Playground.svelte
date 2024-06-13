@@ -94,7 +94,6 @@
 		const clear = () => {
 			xterm.clear();
 			xterm.write('\x1b[2J\x1b[H');
-			clearInterval(timeout);
 		};
 		clear();
 
@@ -105,6 +104,7 @@
 			(emitter as Emitter<any>).off('*');
 		});
 		emitter.on('ready', () => {
+			clearInterval(timeout);
 			clear();
 			statusText = 'Running...';
 			emitter.on('stdout', (s) => xterm.write(s));
