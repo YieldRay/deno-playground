@@ -100,6 +100,7 @@
 		const emitter = run(me.getValue());
 
 		emitter.on('exit', (s) => {
+			clearInterval(timeout);
 			statusText = s;
 			(emitter as Emitter<any>).off('*');
 		});
