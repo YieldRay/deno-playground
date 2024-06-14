@@ -86,6 +86,7 @@
 
 		const spinner = ['|', '/', '-', '\\'];
 		let i = 0;
+		let isSpinning = true;
 		const timeout = setInterval(() => {
 			xterm.write('\r' + spinner[i]);
 			i = (i + 1) % spinner.length;
@@ -96,17 +97,23 @@
 			xterm.write('\x1b[2J\x1b[H');
 		};
 		clear();
+		const stop = () => {
+			if (isSpinning) {
+				clearInterval(timeout);
+				clear();
+				isSpinning = false;
+			}
+		};
 
 		const emitter = run(me.getValue());
 
 		emitter.on('exit', (s) => {
-			clearInterval(timeout);
+			stop();
 			statusText = s;
 			(emitter as Emitter<any>).off('*');
 		});
 		emitter.on('ready', () => {
-			clearInterval(timeout);
-			clear();
+			stop();
 			statusText = 'Running...';
 			emitter.on('stdout', (s) => xterm.write(s));
 			emitter.on('stderr', (s) => xterm.write(s));

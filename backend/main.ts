@@ -1,17 +1,26 @@
 /**
- * This script should run in a virtual environment,
- * as it execute by: deno run `-A`
+ * This script should run in a virtual (sandbox) environment,
+ * as it runs untrusted code and execute with: deno run -A main.ts
  */
 
 import { encodeBase64 } from 'jsr:@std/encoding/base64';
-import ServeRouter from 'https://esm.sh/serve-router@1';
+import ServeRouter from 'https://esm.sh/serve-router@1.1.0';
 
+const PORT = Number(Deno.env.get('PORT')) || 8000;
 const TIMEOUT = 10 * 1000;
 
 const app = ServeRouter();
+app.all(
+	'/',
+	() =>
+		new Response(`Usage:
 
-app.all('/', () => new Response(`Usage:\n\nPOST /event-stream\ncode`));
+POST /event-stream
+{code}
 
+GET /event-stream?code={code}
+`)
+);
 app.all('/event-stream', async (req) => {
 	const code =
 		req.method === 'GET' ? new URL(req.url).searchParams.get('code') || '' : await req.text();
@@ -19,8 +28,18 @@ app.all('/event-stream', async (req) => {
 	let child: Deno.ChildProcess;
 	const body = new ReadableStream({
 		async start(controller) {
+			/** https://developer.mozilla.org/docs/Web/API/Server-sent_events */
+			const send = (event: string, data: string) =>
+				controller.enqueue(new TextEncoder().encode(`event: ${event}\ndata: ${data}\n\n`));
+
+			// [events]
+			// ready : string
+			// stdout: base64
+			// stderr: base64
+			// exit  : string
+
 			try {
-				const filepath = await Deno.makeTempFile({ prefix: 'temp_run' });
+				const filepath = await Deno.makeTempFile({ prefix: 'deno_playground_' });
 				await Deno.writeTextFile(filepath, code);
 				console.log({ date: new Date(), filepath, content: code });
 
@@ -54,39 +73,26 @@ app.all('/event-stream', async (req) => {
 				});
 
 				child = cmd.spawn();
+				send('ready', filepath);
 
-				controller.enqueue(new TextEncoder().encode(`event: ready\ndata: ${filepath}\n\n`));
 				// pipe both stdout stderr
 				await Promise.all<void>([
 					(async () => {
-						for await (const chunk of child.stdout) {
-							controller.enqueue(
-								new TextEncoder().encode(`event: stdout\ndata: ${encodeBase64(chunk)}\n\n`)
-							);
-						}
+						for await (const chunk of child.stdout) send('stdout', encodeBase64(chunk));
 					})(),
 					(async () => {
-						for await (const chunk of child.stderr) {
-							controller.enqueue(
-								new TextEncoder().encode(`event: stderr\ndata: ${encodeBase64(chunk)}\n\n`)
-							);
-						}
+						for await (const chunk of child.stderr) send('stderr', encodeBase64(chunk));
 					})()
 				]);
 
-				/**
-				 * note that the `exit` event does NOT encode base64, just normal string
-				 */
 				const status = await child.status;
-				controller.enqueue(
-					new TextEncoder().encode(
-						`event: exit\ndata: ${
-							status.success
-								? `Normal program termination. Exit status: ${status.code}`
-								: `Exit status: ${status.code}`
-						}\n\n`
-					)
+				send(
+					'exit',
+					status.success
+						? `Normal program termination. Exit status: ${status.code}`
+						: `Exit status: ${status.code}`
 				);
+
 				console.log({
 					date: new Date(),
 					filepath,
@@ -95,13 +101,14 @@ app.all('/event-stream', async (req) => {
 				});
 			} catch (e) {
 				console.error(e);
-				controller.enqueue(new TextEncoder().encode(`event: exit\ndata: Interrupted\n\n`));
+				send('exit', 'Interrupted');
 			} finally {
 				controller.close();
 			}
 		},
 		cancel() {
-			child?.kill();
+			// force the process to kill
+			child?.kill('SIGKILL');
 		}
 	});
 
@@ -117,5 +124,5 @@ app.all('/event-stream', async (req) => {
 
 Deno.serve({
 	handler: app.fetch,
-	port: Number(Deno.env.get('PORT')) || undefined
+	port: PORT
 });
