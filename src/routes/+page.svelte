@@ -41,6 +41,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>Deno Playground</title>
+</svelte:head>
+
 <Playground
 	title="Deno Playground"
 	{initCode}
