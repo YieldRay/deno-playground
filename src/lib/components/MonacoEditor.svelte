@@ -4,7 +4,6 @@
 	import * as monaco from 'monaco-editor';
 	import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 	import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-	import init, { format } from '@wasm-fmt/web_fmt/vite';
 
 	/**
 	 * https://microsoft.github.io/monaco-editor/typedoc/index.html
@@ -40,24 +39,6 @@
 			noSemanticValidation: true,
 			noSyntaxValidation: true // This line disables errors in jsx tags like <div>, etc.
 		});
-
-		await init();
-		for (const [name, filename] of Object.entries({
-			typescript: 'nain.ts',
-			json: 'filename.json',
-			javascript: 'index.js'
-		}))
-			monaco.languages.registerDocumentFormattingEditProvider(name, {
-				provideDocumentFormattingEdits(model, options) {
-					const formatted = format(model.getValue(), filename);
-					return [
-						{
-							range: model.getFullModelRange(),
-							text: formatted
-						}
-					];
-				}
-			});
 
 		// https://github.com/microsoft/monaco-editor/blob/main/docs/integrate-esm.md
 		editor = monaco.editor.create(editorElement, {
