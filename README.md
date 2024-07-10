@@ -15,5 +15,8 @@ The backend is designed for running untrusted code, so please ensure that securi
 For example, you may run it in a sandbox environment like Docker.
 
 ```sh
-deno run -A https://raw.githubusercontent.com/YieldRay/deno-playground/main/backend/main.ts
+deno run -A https://raw.githubusercontent.com/YieldRay/deno-playground/main/backend/deno.ts
+
+# You can also run a backend to eval script via spawning bun process
+deno run -A https://raw.githubusercontent.com/YieldRay/deno-playground/main/backend/bun.ts
 ```

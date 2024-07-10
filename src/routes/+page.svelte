@@ -5,8 +5,8 @@
 
 	const defaultServerUrl =
 		location.origin.endsWith('.488848.xyz') || location.origin.endsWith('.deta.app')
-			? '/api/event-stream'
-			: 'https://deno.488848.xyz/api/event-stream';
+			? '/deno/event-stream'
+			: 'https://deno.488848.xyz/deno/event-stream';
 
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	const toastStore = getToastStore();

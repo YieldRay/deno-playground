@@ -1,6 +1,8 @@
 /**
  * This script should run in a virtual (sandbox) environment,
- * as it runs untrusted code and execute with: deno run -A main.ts
+ * as it runs untrusted code and execute with: 
+ * 
+ * deno run -A deno.ts
  */
 
 import { encodeBase64 } from 'jsr:@std/encoding/base64';
@@ -25,6 +27,7 @@ POST /event-stream
 GET /event-stream?code={code}
 `)
 );
+
 app.all('/event-stream', async (req) => {
 	const code =
 		req.method === 'GET' ? new URL(req.url).searchParams.get('code') || '' : await req.text();
