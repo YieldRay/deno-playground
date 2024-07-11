@@ -17,6 +17,7 @@ import { createWriteStream } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import child_process from 'node:child_process';
+import { Buffer } from 'node:buffer';
 
 const encodeBase64 = (u8a: ArrayBuffer) => Buffer.from(u8a).toString('base64');
 

@@ -19,13 +19,13 @@ micros:
     run: DENO_DIR=/tmp/deno ./deno run -A deno.ts
     dev: deno run -A main.ts
 
-  # - name: backend-bun
-  #   public: true
-  #   src: ./backend
-  #   path: bun
-  #   engine: custom
-  #   commands:
-  #     - curl https://github.com/oven-sh/bun/releases/latest/download/bun-linux-x64.zip -kL
-  #     - unzip -j bun-linux-x64.zip bun-linux-x64/bun && rm bun-linux-x64.zip
-  #   run: ./bun run bun.ts
-  #   dev: bun run bun.ts
+  - name: backend-bun
+    public: true
+    src: ./backend
+    path: bun
+    engine: custom
+    commands:
+      - curl https://github.com/oven-sh/bun/releases/latest/download/bun-linux-x64.zip -kL
+      - unzip -j bun-linux-x64.zip bun-linux-x64/bun && rm bun-linux-x64.zip
+    run: ./bun run bun.ts
+    dev: bun run bun.ts
