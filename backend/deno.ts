@@ -6,7 +6,7 @@
  */
 
 import { encodeBase64 } from 'jsr:@std/encoding/base64';
-import ServeRouter from 'https://esm.sh/serve-router@1.1.0';
+import ServeRouter from 'https://esm.sh/serve-router@1.1.1';
 
 const PORT = Number(Deno.env.get('PORT')) || 8000;
 const TIMEOUT = 10 * 1000;
@@ -54,26 +54,28 @@ app.all('/event-stream', async (req) => {
 				const cmd = new Deno.Command(Deno.execPath(), {
 					args: [
 						'run',
+						/** https://docs.deno.com/runtime/reference/cli/run/ */
 						'-A',
 						'-r',
+						'--no-lock',
 						'--no-prompt',
-						'--lock-write',
-						/** https://docs.deno.com/runtime/manual/tools/unstable_flags */
+						'--no-config',
+						/** https://docs.deno.com/runtime/reference/cli/unstable_flags/ */
 						'--unstable-bare-node-builtins',
-						// '--unstable-byonm',
-						// '--unstable-sloppy-imports',
+						'--unstable-detect-cjs',
+						'--unstable-node-globals',
+						'--unstable-sloppy-imports',
 						'--unstable-unsafe-proto',
 						'--unstable-webgpu',
 						'--unstable-broadcast-channel',
 						'--unstable-worker-options',
 						'--unstable-cron',
 						'--unstable-kv',
-						'--unstable-ffi',
-						'--unstable-fs',
 						'--unstable-net',
+						'--unstable-temporal',
 						filepath
 					],
-					/** https://docs.deno.com/runtime/manual/getting_started/setup_your_environment#environment-variables */
+					/** https://docs.deno.com/runtime/reference/env_variables/#special-environment-variables */
 					env: { DENO_DIR },
 					stdin: 'null',
 					stdout: 'piped',
