@@ -3,7 +3,6 @@ import { ChevronDown, ChevronUp, Play, Pen, Fullscreen } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 import { useLocalStorage } from "react-use";
-import { useHotkeys } from "react-hotkeys-hook";
 import type { Terminal } from "@xterm/xterm";
 import { createRunEventStream } from "./lib/api";
 import { useEncodedState } from "./lib/use-encoded-state";
@@ -24,7 +23,6 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [value, setValue] = useEncodedState(INIT_CODE);
   const [isRunning, setIsRunning] = useState(false);
-
   const outputPanelRef = useRef<ImperativePanelHandle>(null);
 
   const DEFAULT_SIZE = 20;
@@ -80,13 +78,6 @@ export default function App() {
     });
   };
 
-  useHotkeys("ctrl+l", () => {
-    const term = instance.current;
-    if (!term) return;
-
-    term.clear();
-  });
-
   return (
     <ResizablePanelGroup direction="vertical" className="h-full">
       <ResizablePanel>
@@ -106,12 +97,12 @@ export default function App() {
           <header className="px-1 flex items-center justify-between mb-1">
             <span className="underline">Console</span>
             <div className="flex gap-4">
-              <Hotkeys keys="ctrl+alt+n" fn={run} disabled={isRunning}>
+              <Hotkeys keys="$mod+Enter" fn={run} disabled={isRunning}>
                 <Play size={16} />
               </Hotkeys>
 
               <Hotkeys
-                keys="ctrl+alt+u"
+                keys="$mod+U"
                 fn={() => {
                   const newRemoteURL = prompt("Set the remote URL", remoteURL);
                   if (!newRemoteURL) {
@@ -124,13 +115,13 @@ export default function App() {
                 <Pen size={16} />
               </Hotkeys>
 
-              <Hotkeys keys="ctrl+alt+0" fn={toggleFullscreen}>
+              <Hotkeys keys="$mod+0" fn={toggleFullscreen}>
                 <Fullscreen size={16} />
               </Hotkeys>
 
               <ThemeToggler />
 
-              <Hotkeys keys="ctrl+\" fn={toggleCollapse}>
+              <Hotkeys keys="$mod+\" fn={toggleCollapse}>
                 {isOutputCollapsed ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </Hotkeys>
             </div>

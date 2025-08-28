@@ -1,5 +1,18 @@
-import { useHotkeys, type Keys } from "react-hotkeys-hook";
+import { tinykeys, type KeyBindingMap } from "tinykeys";
 import { clsx } from "clsx";
+import { useCallback, useEffect } from "react";
+
+export const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function useKeyboardShortcuts(kbm: KeyBindingMap) {
+  useEffect(() => {
+    const unsubscribe = tinykeys(window, kbm);
+    return () => {
+      unsubscribe();
+    };
+  }, [kbm]);
+}
 
 export default function Shortcut({
   children,
@@ -7,20 +20,29 @@ export default function Shortcut({
   fn,
   disabled,
 }: React.PropsWithChildren<{
-  keys: Keys;
+  keys: string;
   fn: VoidFunction;
   disabled?: boolean;
 }>) {
-  useHotkeys(keys, fn);
+  const cb = useCallback(() => {
+    if (disabled) return;
+    fn();
+  }, [fn, disabled]);
+
+  useKeyboardShortcuts({
+    [keys]: cb,
+  });
+
+  const title = isMac
+    ? keys.replace("$mod", "⌘").replace("alt", "⌥").replace("shift", "⇧")
+    : keys.replace("$mod", "ctrl").replace("alt", "alt").replace("shift", "shift");
+
   return (
     <span
       aria-disabled={disabled}
-      title={String(keys || "")}
+      title={title}
       className={clsx(disabled ? "cursor-not-allowed" : "cursor-pointer")}
-      onClick={() => {
-        if (disabled) return;
-        fn();
-      }}
+      onClick={cb}
     >
       {children}
     </span>

@@ -9,7 +9,6 @@ import "./monaco-workers";
 interface Props {
   value?: string;
   onChange?: (value: string) => void;
-  onState?: (state: string) => void;
 }
 
 export const Editor: FC<Props> = ({ value = "", onChange }) => {
@@ -50,8 +49,8 @@ export const Editor: FC<Props> = ({ value = "", onChange }) => {
       model.dispose();
       editor.dispose();
     };
-    // value is init value, so value is NOT in the dependency array
-  }, [isDark, onChange]);
+    // value is init value, so value+onChange is NOT in the dependency array
+  }, [isDark]);
 
   // 单独处理value变化的effect
   useEffect(() => {

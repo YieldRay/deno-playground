@@ -25,7 +25,7 @@ export function ThemeToggler() {
   };
 
   return (
-    <Hotkeys keys="ctrl+alt+9" fn={toggle}>
+    <Hotkeys keys="$mod+9" fn={toggle}>
       <Icon></Icon>
     </Hotkeys>
   );

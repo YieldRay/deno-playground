@@ -17,6 +17,15 @@ export const XTerm = forwardRef<Terminal, React.HTMLAttributes<HTMLDivElement>>(
     if (!divRef.current) return;
     const fitAddon = new FitAddon();
 
+    const term = new Terminal({
+      disableStdin: true,
+      convertEol: true,
+      fontFamily: `ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace`,
+    });
+    term.loadAddon(fitAddon);
+    term.open(divRef.current);
+    instance.current = term;
+
     const ro = new ResizeObserver(() => {
       const term = instance.current;
       if (!term) return;
@@ -24,15 +33,6 @@ export const XTerm = forwardRef<Terminal, React.HTMLAttributes<HTMLDivElement>>(
       // term.resize(Math.ceil(width / 8.5), Math.ceil(height / 14.5));
     });
     ro.observe(divRef.current);
-
-    const term = new Terminal({
-      disableStdin: true,
-      convertEol: true,
-      fontFamily: `ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace`,
-    });
-    term.loadAddon(fitAddon);
-    instance.current = term;
-    term.open(divRef.current);
 
     return () => {
       term.dispose();
