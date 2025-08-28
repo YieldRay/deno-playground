@@ -52,7 +52,7 @@ export const Editor: FC<Props> = ({ value = "", onChange }) => {
     // value is init value, so value+onChange is NOT in the dependency array
   }, [isDark]);
 
-  // 单独处理value变化的effect
+  // Separate effect to handle value changes
   useEffect(() => {
     if (editorRef.current && editorRef.current.getValue() !== value) {
       editorRef.current.setValue(value);

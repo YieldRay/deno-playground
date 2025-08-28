@@ -4,12 +4,15 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import type { ImperativePanelHandle } from "react-resizable-panels";
 import { useLocalStorage } from "react-use";
 import type { Terminal } from "@xterm/xterm";
+import { toast } from "sonner";
 import { createRunEventStream } from "./lib/api";
 import { useEncodedState } from "./lib/use-encoded-state";
 import MonacoEditor from "./components/editor";
 import Hotkeys from "./components/Hotkeys";
 import { XTerm } from "./components/XTerm";
 import { ThemeToggler } from "./components/theme-toggler";
+import { PromptDialog } from "./components/PromptDialog";
+import { Toaster } from "./components/ui/sonner";
 
 const INIT_CODE = `console.log(process.version)`;
 
@@ -23,6 +26,7 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [value, setValue] = useEncodedState(INIT_CODE);
   const [isRunning, setIsRunning] = useState(false);
+  const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
   const outputPanelRef = useRef<ImperativePanelHandle>(null);
 
   const DEFAULT_SIZE = 20;
@@ -103,14 +107,7 @@ export default function App() {
 
               <Hotkeys
                 keys="$mod+U"
-                fn={() => {
-                  const newRemoteURL = prompt("Set the remote URL", remoteURL);
-                  if (!newRemoteURL) {
-                    alert("Unchanged");
-                    return;
-                  }
-                  setRemoteURL(newRemoteURL);
-                }}
+                fn={() => setIsPromptDialogOpen(true)}
               >
                 <Pen size={16} />
               </Hotkeys>
@@ -130,6 +127,30 @@ export default function App() {
           <XTerm ref={instance} className="scrollbar overflow-auto flex-1 mx-1 whitespace-pre-wrap break-all" />
         </div>
       </ResizablePanel>
+      
+      <PromptDialog
+        open={isPromptDialogOpen}
+        onOpenChange={setIsPromptDialogOpen}
+        title="Set Remote URL"
+        description="Please enter the new remote URL"
+        defaultValue={remoteURL || ""}
+        placeholder="Enter URL..."
+        onConfirm={(newURL) => {
+          if (newURL.trim()) {
+            setRemoteURL(newURL.trim());
+            toast.success("URL updated successfully");
+          } else {
+            toast.info("No changes made");
+          }
+          setIsPromptDialogOpen(false);
+        }}
+        onCancel={() => {
+          toast.info("No changes made");
+          setIsPromptDialogOpen(false);
+        }}
+      />
+      
+      <Toaster />
     </ResizablePanelGroup>
   );
 }

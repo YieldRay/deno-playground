@@ -7,7 +7,7 @@ import "monaco-editor/esm/vs/language/typescript/monaco.contribution";
 
 monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
 
-// 配置 TypeScript 编译器选项，禁用 DOM 库
+// Configure TypeScript compiler options, disable DOM library
 monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
   target: monaco.languages.typescript.ScriptTarget.ES2020,
   allowNonTsExtensions: true,
@@ -19,15 +19,15 @@ monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
   reactNamespace: "React",
   allowJs: true,
   typeRoots: ["node_modules/@types"],
-  // 明确指定只包含 Node.js 类型，排除 DOM 类型
-  lib: [], // 不包含任何默认库
-  types: ["node"], // 只包含 Node.js 类型
+  // Explicitly specify only Node.js types, exclude DOM types
+  lib: [], // Don't include any default libraries
+  types: ["node"], // Only include Node.js types
 });
 
-// 配置 TypeScript 诊断选项，启用语义验证以便正确使用 Node.js 类型
+// Configure TypeScript diagnostic options, enable semantic validation for proper Node.js types usage
 monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-  noSemanticValidation: false, // 启用语义验证以检查 Node.js API 使用
-  noSyntaxValidation: false, // 启用语法验证
+  noSemanticValidation: false, // Enable semantic validation to check Node.js API usage
+  noSyntaxValidation: false, // Enable syntax validation
   noSuggestionDiagnostics: false,
   diagnosticCodesToIgnore: [
     1375, // 'await' expressions are only allowed at the top level of a file when that file is a module
