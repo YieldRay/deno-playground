@@ -108,11 +108,11 @@ export default function App() {
                 <Pen size={16} />
               </Hotkeys>
 
+              <ThemeToggler />
+
               <Hotkeys keys="$mod+0" fn={toggleFullscreen}>
                 {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </Hotkeys>
-
-              <ThemeToggler />
 
               <Hotkeys keys="$mod+\" fn={toggleCollapse}>
                 {isOutputCollapsed ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -120,7 +120,7 @@ export default function App() {
             </div>
           </header>
 
-          <XTerm ref={instance} className="scrollbar overflow-auto flex-1 mx-1 whitespace-pre-wrap break-all" />
+          <XTerm ref={instance} className="scrollbar overflow-auto flex-1 mx-1" />
         </div>
       </ResizablePanel>
 
