@@ -26,6 +26,11 @@ export async function handler(request: Request): Promise<Response> {
 
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {
+      // [events]
+      // ready
+      // stdout: base64
+      // stderr: base64
+      // exit : string
       const send = (event: string, data: string) => controller.enqueue(encode(`event: ${event}\ndata: ${data}\n\n`));
       const stdout = (buffer: ArrayBuffer) => send("stdout", encodeBase64(buffer));
       const stderr = (buffer: ArrayBuffer) => send("stderr", encodeBase64(buffer));

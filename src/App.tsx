@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronDown, ChevronUp, Play, Pen, Fullscreen } from "lucide-react";
+import { ChevronDown, ChevronUp, Play, Pen, Maximize2, Minimize2 } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 import { useLocalStorage } from "react-use";
@@ -105,15 +105,12 @@ export default function App() {
                 <Play size={16} />
               </Hotkeys>
 
-              <Hotkeys
-                keys="$mod+U"
-                fn={() => setIsPromptDialogOpen(true)}
-              >
+              <Hotkeys keys="$mod+U" fn={() => setIsPromptDialogOpen(true)}>
                 <Pen size={16} />
               </Hotkeys>
 
               <Hotkeys keys="$mod+0" fn={toggleFullscreen}>
-                <Fullscreen size={16} />
+                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </Hotkeys>
 
               <ThemeToggler />
@@ -127,7 +124,7 @@ export default function App() {
           <XTerm ref={instance} className="scrollbar overflow-auto flex-1 mx-1 whitespace-pre-wrap break-all" />
         </div>
       </ResizablePanel>
-      
+
       <PromptDialog
         open={isPromptDialogOpen}
         onOpenChange={setIsPromptDialogOpen}
@@ -149,7 +146,7 @@ export default function App() {
           setIsPromptDialogOpen(false);
         }}
       />
-      
+
       <Toaster />
     </ResizablePanelGroup>
   );

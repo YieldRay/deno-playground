@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -49,13 +49,19 @@ export function PromptDialog({
   // Local state to manage input value
   const [value, setValue] = useState(defaultValue)
 
+  // Update local state when defaultValue changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      setValue(defaultValue)
+    }
+  }, [open, defaultValue])
+
   /**
    * Handles confirmation action
-   * Calls onConfirm with current value and resets input
+   * Calls onConfirm with current value
    */
   const handleConfirm = () => {
     onConfirm(value)
-    setValue(defaultValue)
   }
 
   /**
