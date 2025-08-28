@@ -12,7 +12,6 @@ import Hotkeys from "./components/Hotkeys";
 import { XTerm } from "./components/XTerm";
 import { ThemeToggler } from "./components/theme-toggler";
 import { PromptDialog } from "./components/PromptDialog";
-import { Toaster } from "./components/ui/sonner";
 
 const INIT_CODE = `console.log(process.version)`;
 
@@ -146,8 +145,6 @@ export default function App() {
           setIsPromptDialogOpen(false);
         }}
       />
-
-      <Toaster />
     </ResizablePanelGroup>
   );
 }
