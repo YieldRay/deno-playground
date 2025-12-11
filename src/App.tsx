@@ -120,7 +120,7 @@ export default function App() {
             </div>
           </header>
 
-          <XTerm ref={instance} className="scrollbar overflow-auto flex-1 mx-1" />
+          <XTerm ref={instance} className="scrollbar scrollbar-transparent overflow-auto flex-1 mx-1" />
         </div>
       </ResizablePanel>
 
